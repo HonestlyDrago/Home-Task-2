@@ -1,10 +1,10 @@
-Microsoft (R) Macro Assembler Version 14.40.33813.0	    03/05/25 23:00:08
+Microsoft (R) Macro Assembler Version 14.40.33813.0	    03/05/25 23:03:30
 AddTwo.asm						     Page 1 - 1
 
 
 				.386
+				.model flat,stdcall
 				.stack 4096
-AddTwo.asm(2) : error A2013:.MODEL must precede this directive
 				include Irvine32.inc  ; Include the Irvine32 library for DumpRegs
 			      C ; Include file for Irvine32.lib             (Irvine32.inc)
 			      C 
@@ -12,6 +12,8 @@ AddTwo.asm(2) : error A2013:.MODEL must precede this directive
 			      C 
 			      C INCLUDE SmallWin.inc		; MS-Windows prototypes, structures, and constants
 			      C .NOLIST
+			      C .MODEL flat, stdcall
+SmallWin.inc(11) : warning A4011:multiple .MODEL directives found : .MODEL ignored
 			      C .LIST
 			      C 
 			      C INCLUDE VirtualKeys.inc
@@ -25,49 +27,45 @@ AddTwo.asm(2) : error A2013:.MODEL must precede this directive
 			      C 
 
  00000000			.data
- 00000000 00C8			    m WORD 200      
- 00000002 00002710		    n DWORD 10000    
- 00000006 0096			    o WORD 150       
- 00000008 00000000		    result DWORD ?   
- 0000000C 51 32 20 52 65	    msg2 db "Q2 Result: ", 0  
+ 00000000			   .data
+ 00000000 0064			    a WORD 100       
+ 00000002 0032			    b WORD 50        
+ 00000004 0000			    result WORD ?    
+ 00000006 51 31 20 52 65	    msg1 db "Q1 Result: ", 0  
 	   73 75 6C 74 3A
 	   20 00
- 00000018 0D 0A 00		    newline db 13, 10, 0  ; Newline for formatting output
-
+ 00000012 0D 0A 00		    newline db 13, 10, 0  
  00000000			.code
  00000000			main proc
 
- 00000000  66| A1		    mov ax, m       
+ 00000000  66| A1		    mov ax, a       
 	   00000000 R
- 00000006  66| BA 0000		    mov dx, 0        
- 0000000A  66| 03 05		    add ax, WORD PTR n    
+ 00000006  66| 03 05		    add ax, b       
 	   00000002 R
- 00000011  66| 13 15		    adc dx, WORD PTR n+2  
+ 0000000D  66| 2B 05		    sub ax, b       
+	   00000002 R
+ 00000014  66| A3		    mov result, ax  
 	   00000004 R
- 00000018  66| 2B 05		    sub ax, o        
-	   00000006 R
- 0000001F  66| 83 DA 00		    sbb dx, 0        
 
- 00000023  A3 00000008 R	    mov result, eax   
+ 0000001A  BA 00000006 R	    mov edx, OFFSET msg1  
+ 0000001F  E8 00000000 E	    call WriteString       
 
- 00000028  BA 0000000C R	    mov edx, OFFSET msg2  
- 0000002D  E8 00000000 E	    call WriteString      
+ 00000024  0F B7 05		    movzx eax, result  
+	   00000004 R
+ 0000002B  E8 00000000 E	    call WriteDec      
+ 00000030  E8 00000000 E	    call DumpRegs      
 
-				    movzx eax, result 
-AddTwo.asm(28) : error A2070:invalid instruction operands
- 00000032  E8 00000000 E	    call WriteDec      
- 00000037  E8 00000000 E	    call DumpRegs      
-
- 0000003C  BA 00000018 R	    mov edx, OFFSET newline  
- 00000041  E8 00000000 E	    call WriteString
+ 00000035  BA 00000012 R	    mov edx, OFFSET newline  
+ 0000003A  E8 00000000 E	    call WriteString
 
 				    invoke ExitProcess, 0  
- 00000046  6A 00	   *	    push   +000000000h
- 00000048  E8 00000000 E   *	    call   ExitProcess
+ 0000003F  6A 00	   *	    push   +000000000h
+ 00000041  E8 00000000 E   *	    call   ExitProcess
 
- 0000004D			main endp
+ 00000046			main endp
 				end main
-Microsoft (R) Macro Assembler Version 14.40.33813.0	    03/05/25 23:00:08
+
+Microsoft (R) Macro Assembler Version 14.40.33813.0	    03/05/25 23:03:30
 AddTwo.asm						     Symbols 2 - 1
 
 
@@ -160,9 +158,9 @@ Segments and Groups:
                 N a m e                 Size     Length   Align   Combine Class
 
 FLAT . . . . . . . . . . . . . .	GROUP
-STACK  . . . . . . . . . . . . .	32 Bit	 00001000 Para	  Stack	  'STACK'	 
-_DATA  . . . . . . . . . . . . .	32 Bit	 0000001B Para	  Public  'DATA'	
-_TEXT  . . . . . . . . . . . . .	32 Bit	 0000004D Para	  Public  'CODE'	
+STACK  . . . . . . . . . . . . .	32 Bit	 00001000 DWord	  Stack	  'STACK'	 
+_DATA  . . . . . . . . . . . . .	32 Bit	 00000015 DWord	  Public  'DATA'	
+_TEXT  . . . . . . . . . . . . .	32 Bit	 00000046 DWord	  Public  'CODE'	
 
 
 Procedures, parameters, and locals:
@@ -269,7 +267,7 @@ WriteStackFrame  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External
 WriteString  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteToFile  . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
 WriteWindowsMsg  . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External STDCALL
-main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 0000004D Public STDCALL
+main . . . . . . . . . . . . . .	P Near	 00000000 _TEXT	Length= 00000046 Public STDCALL
 printf . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 scanf  . . . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
 wsprintfA  . . . . . . . . . . .	P Near	 00000000 FLAT	Length= 00000000 External C
@@ -488,9 +486,11 @@ VK_UP  . . . . . . . . . . . . .	Number	 00000026h
 WINDOW_BUFFER_SIZE_EVENT . . . .	Number	 00000004h   
 WriteConsoleOutputCharacter  . .	Text   	 WriteConsoleOutputCharacterA
 WriteConsole . . . . . . . . . .	Text   	 WriteConsoleA
+a  . . . . . . . . . . . . . . .	Word	 00000000 _DATA	
 black  . . . . . . . . . . . . .	Number	 00000000h   
 blue . . . . . . . . . . . . . .	Number	 00000001h   
 brown  . . . . . . . . . . . . .	Number	 00000006h   
+b  . . . . . . . . . . . . . . .	Word	 00000002 _DATA	
 cyan . . . . . . . . . . . . . .	Number	 00000003h   
 exit . . . . . . . . . . . . . .	Text   	 INVOKE ExitProcess,0
 gray . . . . . . . . . . . . . .	Number	 00000008h   
@@ -502,16 +502,13 @@ lightGreen . . . . . . . . . . .	Number	 0000000Ah
 lightMagenta . . . . . . . . . .	Number	 0000000Dh   
 lightRed . . . . . . . . . . . .	Number	 0000000Ch   
 magenta  . . . . . . . . . . . .	Number	 00000005h   
-msg2 . . . . . . . . . . . . . .	Byte	 0000000C _DATA	
-m  . . . . . . . . . . . . . . .	Word	 00000000 _DATA	
-newline  . . . . . . . . . . . .	Byte	 00000018 _DATA	
-n  . . . . . . . . . . . . . . .	DWord	 00000002 _DATA	
-o  . . . . . . . . . . . . . . .	Word	 00000006 _DATA	
+msg1 . . . . . . . . . . . . . .	Byte	 00000006 _DATA	
+newline  . . . . . . . . . . . .	Byte	 00000012 _DATA	
 red  . . . . . . . . . . . . . .	Number	 00000004h   
-result . . . . . . . . . . . . .	DWord	 00000008 _DATA	
+result . . . . . . . . . . . . .	Word	 00000004 _DATA	
 white  . . . . . . . . . . . . .	Number	 0000000Fh   
 wsprintf . . . . . . . . . . . .	Text   	 wsprintfA
 yellow . . . . . . . . . . . . .	Number	 0000000Eh   
 
-	   0 Warnings
-	   2 Errors
+	   1 Warnings
+	   0 Errors
